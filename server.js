@@ -81,26 +81,64 @@ const wardrobeItemSchema = new mongoose.Schema({
           });
   });
 
-  app.get('/allitems', async (clientRequest, wardrobeServerResponse) => {
-    const itemData = clientRequest.body;
-    // const userEmail = clientRequest.query.email;
-    //We start by looking for a user in our database. We are searching for a user 
-    //whose email matches the one provided in itemData.email. This line finds that user 
-    //and stores their information in a variable called findUserid.
-    const findUserid = await User.findOne({"email": itemData.email})
-    //We take the special ID of the user we found (the _id) and store it in a variable called userid. 
-    //This ID is like a unique code that identifies this user in our database.
-    const userid = findUserid.id
+//means that we're setting up a special action when someone tries to access a specific web address (URL) on our website. 
+//In this case, it's "/allitems" followed by something that looks like an email address.
+  app.get('/allitems/:email', async (clientRequest, wardrobeServerResponse) => {
+    //async (clientRequest, wardrobeServerResponse) => { sets up a function that will be run when someone goes 
+    //to the "/allitems" page on our website. We have two helpers here: clientRequest (what the person is asking for) 
+    //and wardrobeServerResponse (what we're going to tell them).
+    console.log('hello')
+    const itemData = clientRequest.params.userEmail;
+    console.log('itemdata',itemData)
+    //const itemData = clientRequest.params.email; means we're taking something the person put in the web address 
+    //(like an email address), and we're saving it in a special box called itemData. So, if they went to "/allitems/john@example.com," 
+    //itemData would be "john@example.com."
+    const findUseremail = await User.findOne({"email": itemData})
+    console.log('finduser', findUseremail)
+    //const findUserid = await User.findOne({"email": itemData}) means we're looking in our computer's memory (database) 
+    //to find someone with an email that matches what's in itemData. It's like looking in a phone book to find a person's phone 
+    //number when you know their name.
+    const userid = findUseremail._id
+    console.log('userid', userid)
     //Next, we want to find all the items in our wardrobe that belong to this user. We search our database for 
     //wardrobe items where the userid matches the userid we found earlier. We collect all these wardrobe items 
     //and store them in a variable called allWardrobeItems.
     const allWardrobeItems = await WardrobeItem.find({ userId: userid})
-    //Finally, we are ready to respond to the request. We send back the list of wardrobe items that we found belonging to the user.
-    //We package these items in a special format called JSON and send it as a response. 
-    //We use the name wardrobeItems to label this list so that whoever receives it knows what it is.
+    console.log('allward', allWardrobeItems)
+    //const allWardrobeItems = await WardrobeItem.find({ userId: userid }) means we're looking in our computer's memory (database) again, 
+    //but this time we're looking for all the clothes (wardrobe items) that belong to the person with the number (userid) we found earlier. 
+    //It's like finding all the clothes that belong to one person in a big closet.
     wardrobeServerResponse.json({ wardrobeItems: allWardrobeItems })
+    //wardrobeServerResponse.json({ wardrobeItems: allWardrobeItems }) is like saying, 
+    //"Okay, we're ready to tell the person what clothes they have. Let's give them the list of clothes (wardrobe items) we found." 
+    //So, we send the list of clothes to the person's computer in a special format called JSON, and they can see their clothes on their screen.
 })
-const User = mongoose.model('User', userSchema);app.post('/user/login', async(req, res) => {
+
+app.get('/singleitem/:id', async (clientRequest, wardrobeServerResponse) => {
+    const itemid = clientRequest.params.id
+    const singleWardrobeItem = await WardrobeItem.find({ _id: itemid})
+    wardrobeServerResponse.json(singleWardrobeItem)
+})
+
+app.put('/singleitem/:id', async (clientRequest, wardrobeServerResponse) => {
+    await WardrobeItem.updateOne({ _id: clientRequest.params.id}, {
+        picture: clientRequest.body.picture,
+        category: clientRequest.body.category,
+        subcategory: clientRequest.body.subcategory,
+        userId: findUserid._id,
+        useremail: itemData.useremail
+    })
+    .then(() => {
+        wardrobeServerResponse.sendStatus(200)
+    })
+    .catch(error => {
+        wardrobeServerResponse.sendStatus(500)
+    })
+})
+
+const User = mongoose.model('User', userSchema);
+
+app.post('/user/login', async(req, res) => {
     const now = new Date()
     if(await User.count({'userEmail': req.body.email}) === 0 ) {
         const newUser = new User({ userEmail: req.body.email, lastLogin: now})
