@@ -17,6 +17,9 @@ app.listen(port, () => {
 mongoose.connect(process.env.DATABASE_URL, {
     dbName: 'clotheslibrary'
 });
+
+
+
 const userSchema = new mongoose.Schema({
     userEmail: {
         type: String,
@@ -58,7 +61,9 @@ const WardrobeItem = mongoose.model('WardrobeItem', wardrobeItemSchema);
 app.post('/addnew', async (clientRequest, wardrobeServerResponse) => {
     // const reqUser = clientRequest.params.id
     const itemData = clientRequest.body;
+    console.log(itemData)
     const findUserid = await User.findOne({ "userEmail": itemData.useremail })
+    console.log(findUserid)
 
 
     const wardrobeItem = new WardrobeItem({
@@ -72,39 +77,38 @@ app.post('/addnew', async (clientRequest, wardrobeServerResponse) => {
 
     wardrobeItem.save()
         .then(() => {
-            console.log(`Item saved - Picture: ${itemData.picture}, Category: ${itemData.category}, Subcategory: ${itemData.subcategory}, UserId: ${findUserid}`);
+            console.log("WardrobeItem saved successfully");
+
             wardrobeServerResponse.sendStatus(200);
         })
         .catch(error => {
-            console.error(error.message);
+            console.error("Error saving WardrobeItem:", error);
+
             wardrobeServerResponse.sendStatus(400);
         });
 });
 
 //means that we're setting up a special action when someone tries to access a specific web address (URL) on our website. 
 //In this case, it's "/allitems" followed by something that looks like an email address.
-app.get('/allitems/:email', async (clientRequest, wardrobeServerResponse) => {
+app.get('/allitems/:userEmail', async (clientRequest, wardrobeServerResponse) => {
+    console.log("clientRequest", clientRequest.params.userEmail)
     //async (clientRequest, wardrobeServerResponse) => { sets up a function that will be run when someone goes 
     //to the "/allitems" page on our website. We have two helpers here: clientRequest (what the person is asking for) 
     //and wardrobeServerResponse (what we're going to tell them).
-    console.log('hello')
     const itemData = clientRequest.params.userEmail;
-    console.log('itemdata', itemData)
-    //const itemData = clientRequest.params.email; means we're taking something the person put in the web address 
+   console.log("itemdata", itemData)
+    //const itemData = clientRequest.params.userEmail; means we're taking something the person put in the web address 
     //(like an email address), and we're saving it in a special box called itemData. So, if they went to "/allitems/john@example.com," 
     //itemData would be "john@example.com."
-    const findUseremail = await User.findOne({ "email": itemData })
-    console.log('finduser', findUseremail)
+    const findUseremail = await User.findOne({ "userEmail": itemData })
     //const findUserid = await User.findOne({"email": itemData}) means we're looking in our computer's memory (database) 
     //to find someone with an email that matches what's in itemData. It's like looking in a phone book to find a person's phone 
     //number when you know their name.
-    const userid = findUseremail._id
-    console.log('userid', userid)
+    const userid = findUseremail
     //Next, we want to find all the items in our wardrobe that belong to this user. We search our database for 
     //wardrobe items where the userid matches the userid we found earlier. We collect all these wardrobe items 
     //and store them in a variable called allWardrobeItems.
     const allWardrobeItems = await WardrobeItem.find({ userId: userid })
-    console.log('allward', allWardrobeItems)
     //const allWardrobeItems = await WardrobeItem.find({ userId: userid }) means we're looking in our computer's memory (database) again, 
     //but this time we're looking for all the clothes (wardrobe items) that belong to the person with the number (userid) we found earlier. 
     //It's like finding all the clothes that belong to one person in a big closet.
@@ -225,8 +229,8 @@ const Outfit = mongoose.model('Outfit', outfitSchema);
 
 app.post('/outfitPlanner', async (req, response) => {
     const itemData = req.body;
+   
     const findUserid = await User.findOne({ "userEmail": itemData.useremail })
-    console.log(findUserid)
 
     const newOutfit = new Outfit({
         outfitName: itemData.outfitName,
@@ -238,3 +242,12 @@ app.post('/outfitPlanner', async (req, response) => {
         response.sendStatus(200)
     })
 })
+
+app.get('/allOutfits/:email', async (req, res) => {
+    const itemData = req.params.userEmail;
+    const findUseremail = await User.findOne({ "userEmail": itemData })
+    const userid = findUseremail
+    const allOutfits = await Outfit.find({ userId: userid })
+    res.json({outfitItems: allOutfits})
+
+}) 
