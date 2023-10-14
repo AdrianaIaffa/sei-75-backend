@@ -91,12 +91,12 @@ app.post('/addnew', async (clientRequest, wardrobeServerResponse) => {
 //means that we're setting up a special action when someone tries to access a specific web address (URL) on our website. 
 //In this case, it's "/allitems" followed by something that looks like an email address.
 app.get('/allitems/:userEmail', async (clientRequest, wardrobeServerResponse) => {
-    console.log("clientRequest", clientRequest.params.userEmail)
+    console.log("clientRequestallitems", clientRequest.params.userEmail)
     //async (clientRequest, wardrobeServerResponse) => { sets up a function that will be run when someone goes 
     //to the "/allitems" page on our website. We have two helpers here: clientRequest (what the person is asking for) 
     //and wardrobeServerResponse (what we're going to tell them).
     const itemData = clientRequest.params.userEmail;
-   console.log("itemdata", itemData)
+   console.log("itemdataallitems", itemData)
     //const itemData = clientRequest.params.userEmail; means we're taking something the person put in the web address 
     //(like an email address), and we're saving it in a special box called itemData. So, if they went to "/allitems/john@example.com," 
     //itemData would be "john@example.com."
@@ -180,6 +180,7 @@ app.post('/addblogpost', async (clientRequest, blogPostServerResponse) => {
 
     // blogPostServerResponse.json(clientRequest.body)
     const findUserid = await User.findOne({ "userEmail": itemData.useremail })
+  
 
 
     const blogPost = new BlogPost({
@@ -227,27 +228,33 @@ const outfitSchema = new mongoose.Schema({
 });
 const Outfit = mongoose.model('Outfit', outfitSchema);
 
-app.post('/outfitPlanner', async (req, response) => {
+app.post('/outfitPlanner/:userEmail', async (req, response) => {
     const itemData = req.body;
-   
+   console.log(itemData)
     const findUserid = await User.findOne({ "userEmail": itemData.useremail })
+    console.log("outfitplanner", findUserid)
+
+
 
     const newOutfit = new Outfit({
         outfitName: itemData.outfitName,
-        selecteditems: itemData.selectedItems,
+        selectedItems: itemData.selectedItems.map(item => item._id),
         userId: findUserid,
     });
+    console.log(newOutfit);
     newOutfit.save()
     .then(() => {
         response.sendStatus(200)
     })
 })
 
-app.get('/allOutfits/:email', async (req, res) => {
+app.get('/allOutfits/:userEmail', async (req, res) => {
     const itemData = req.params.userEmail;
-    const findUseremail = await User.findOne({ "userEmail": itemData })
-    const userid = findUseremail
-    const allOutfits = await Outfit.find({ userId: userid })
+    console.log(itemData)
+    const findUserid = await User.findOne({ "userEmail": itemData })
+    console.log("allutfits", findUserid)
+    
+    const allOutfits = await Outfit.find({ userId: findUserid }).populate('selectedItems')
     res.json({outfitItems: allOutfits})
 
 }) 
