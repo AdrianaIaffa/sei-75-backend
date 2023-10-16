@@ -30,6 +30,9 @@ const userSchema = new mongoose.Schema({
         required: true
     }
 })
+
+const User = mongoose.model('User', userSchema);
+
 const wardrobeItemSchema = new mongoose.Schema({
     picture: String,
     category: {
@@ -57,6 +60,43 @@ const wardrobeItemSchema = new mongoose.Schema({
 });
 
 const WardrobeItem = mongoose.model('WardrobeItem', wardrobeItemSchema);
+
+const blogPostSchema = new mongoose.Schema({
+    title: String,
+    content: String,
+    picture: String,
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        // required: true,
+    }
+})
+const BlogPost = mongoose.model('BlogPost', blogPostSchema);
+
+const outfitSchema = new mongoose.Schema({
+    outfitName: {
+        type: String,
+        required: true
+    },
+    userId: {
+        // This specifies the data type of the field as an ObjectId. 
+        //ObjectId is typically used for referencing other documents in the database.
+        type: mongoose.Schema.Types.ObjectId,
+        // This indicates that the "userId" field is expected to refer to documents in the "User" 
+        //collection (or model) in your database.
+        ref: 'User',
+        // This means that the "userId" field is required, 
+        //and every document in this schema must have a value for this field.
+        required: true,
+    },
+   selectedItems: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'WardrobeItem', 
+        }
+    ],
+});
+const Outfit = mongoose.model('Outfit', outfitSchema);
 
 app.post('/addnew', async (clientRequest, wardrobeServerResponse) => {
     // const reqUser = clientRequest.params.id
@@ -145,7 +185,7 @@ app.put('/singleitem/:id', async (clientRequest, wardrobeServerResponse) => {
     return wardrobeServerResponse.status(202).json(wardrobeToUpdate)
 })
 
-const User = mongoose.model('User', userSchema);
+
 
 app.post('/user/login', async (req, res) => {
     const now = new Date()
@@ -163,17 +203,7 @@ app.post('/user/login', async (req, res) => {
 
 
 
-const blogPostSchema = new mongoose.Schema({
-    title: String,
-    content: String,
-    picture: String,
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        // required: true,
-    }
-})
-const BlogPost = mongoose.model('BlogPost', blogPostSchema);
+
 
 app.post('/addblogpost', async (clientRequest, blogPostServerResponse) => {
     const itemData = clientRequest.body;
@@ -203,30 +233,7 @@ app.get('/blogPage', async (req, response) => {
 }) 
 
 
-const outfitSchema = new mongoose.Schema({
-    outfitName: {
-        type: String,
-        required: true
-    },
-    userId: {
-        // This specifies the data type of the field as an ObjectId. 
-        //ObjectId is typically used for referencing other documents in the database.
-        type: mongoose.Schema.Types.ObjectId,
-        // This indicates that the "userId" field is expected to refer to documents in the "User" 
-        //collection (or model) in your database.
-        ref: 'User',
-        // This means that the "userId" field is required, 
-        //and every document in this schema must have a value for this field.
-        required: true,
-    },
-   selectedItems: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'WardrobeItem', 
-        }
-    ],
-});
-const Outfit = mongoose.model('Outfit', outfitSchema);
+
 
 app.post('/outfitPlanner/:userEmail', async (req, response) => {
     const itemData = req.body;
