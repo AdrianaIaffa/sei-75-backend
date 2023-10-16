@@ -10,6 +10,9 @@ const api = express();
 api.use(cors())
 api.use(bodyParser.json())
 
+app.listen(port, () => {
+    console.log(`listening on port: ${port}`);
+})
 
 mongoose.connect(process.env.DATABASE_URL, {
     dbName: 'clotheslibrary'
@@ -265,7 +268,7 @@ router.get('/allOutfits/:userEmail', async (req, res) => {
 
 
 const router = Router();
-router.get("/hello", (req, res) => res.send("Hello World!"));
+router.get("/", (req, res) => res.send("Hello World!"));
 
 api.use("/api/", router);
 
