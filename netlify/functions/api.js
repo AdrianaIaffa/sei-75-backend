@@ -10,9 +10,8 @@ const api = express();
 api.use(cors());
 api.use(bodyParser.json());
 
-// app.listen(port, () => {
-//     console.log(`listening on port: ${port}`);
-// })
+const router = Router();
+router.get("/hello", (req, res) => res.send("Hello World!"));
 
 mongoose.connect(process.env.DATABASE_URL, {
   dbName: "clotheslibrary",
@@ -264,9 +263,9 @@ router.get("/allOutfits/:userEmail", async (req, res) => {
   res.json({ outfitItems: allOutfits });
 });
 
-const router = Router();
-router.get("/hello", (req, res) => res.send("Hello World!"));
+
 
 api.use("/api/", router);
 
 export const handler = serverless(api);
+
