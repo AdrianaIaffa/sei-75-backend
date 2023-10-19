@@ -178,7 +178,7 @@ router.get("/singleitem/:id", async (clientRequest, wardrobeServerResponse) => {
   wardrobeServerResponse.json(singleWardrobeItem);
 });
 
-router.put("/singleitem/:id", async (clientRequest, wardrobeServerResponse) => {
+router.delete("/singleitem/:id", async (clientRequest, wardrobeServerResponse) => {
   // await WardrobeItem.updateOne({ _id: clientRequest.params.id}, {
   //     picture: clientRequest.body.picture,
   //     category: clientRequest.body.category,
