@@ -178,7 +178,7 @@ router.get("/singleitem/:id", async (clientRequest, wardrobeServerResponse) => {
   wardrobeServerResponse.json(singleWardrobeItem);
 });
 
-router.delete("/singleitem/:id", async (clientRequest, wardrobeServerResponse) => {
+router.put("/singleitem/:id", async (clientRequest, wardrobeServerResponse) => {
   // await WardrobeItem.updateOne({ _id: clientRequest.params.id}, {
   //     picture: clientRequest.body.picture,
   //     category: clientRequest.body.category,
@@ -198,6 +198,17 @@ router.delete("/singleitem/:id", async (clientRequest, wardrobeServerResponse) =
   await wardrobeToUpdate.save();
   return wardrobeServerResponse.status(202).json(wardrobeToUpdate);
 });
+
+router.delete("/singleitem/:id", async (clientRequest, wardrobeServerResponse) => {
+  const itemid = clientRequest.params.id;
+  await WardrobeItem.deleteOne({_id: itemid})
+  .then(() => {
+    wardrobeServerResponse.sendStatus(200)
+  })
+  .catch(error => {
+    wardrobeServerResponse.sendStatus(500)
+  })
+})
 
 router.post("/user/login", async (req, res) => {
   const now = new Date();
